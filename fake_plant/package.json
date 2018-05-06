@@ -9,6 +9,7 @@
   "author": "FirstKlaas, MNebuhr",
   "license": "ISC",
   "dependencies": {
+    "config": "^1.30.0",
     "mqtt": "^2.17.0"
   }
 }
