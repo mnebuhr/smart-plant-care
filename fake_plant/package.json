@@ -4,7 +4,8 @@
   "description": "Fake plant microservice. This service will send data from a virtual plant.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "author": "FirstKlaas, MNebuhr",
   "license": "ISC",
