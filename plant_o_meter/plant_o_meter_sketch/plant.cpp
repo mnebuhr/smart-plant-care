@@ -21,18 +21,18 @@ void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t p
 
 void reconnect() {
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
+    Serial.print(F("Attempting MQTT connection..."));
     // Attempt to connect
     if (client.connect("plant-o-meter")) {
-      Serial.println("connected");
+      Serial.println(F("connected"));
       // Once connected, publish an announcement...
       client.publish("plant-o-meter/device/reconnect", "hello world");
       // ... and resubscribe
       client.subscribe("ecosystem");
     } else {
-      Serial.print("failed, rc=");
+      Serial.print(F("failed, rc="));
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      Serial.println(F(" try again in 5 seconds"));
       // Wait 5 seconds before retrying
       delay(5000);
     }
