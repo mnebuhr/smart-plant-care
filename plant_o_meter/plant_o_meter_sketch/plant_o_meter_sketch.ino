@@ -9,14 +9,17 @@
 
  #include "plant.h"
 
-const char* ssid     = "xxx";      
-const char* password = "YYY";
+const char* ssid        = "xxx";      
+const char* password    = "YYY";
 const char* mqtt_server = "xxx.xxx.xxx.xxx";
+const uint16_t port     = 999;
 
 void setup() {
-
+  setupHumiditySensor(A0);    
+  setupMqtt(ssid, password, mqtt_server, port);
 }
 
 void loop() {
+  handleEvents();
 
 }
