@@ -15,11 +15,12 @@ const char* mqtt_server = "xxx.xxx.xxx.xxx";
 const uint16_t port     = 999;
 
 void setup() {
-  setupHumiditySensor(A0);    
   setupMqtt(ssid, password, mqtt_server, port);
 }
 
 void loop() {
   handleEvents();
-
+  pushSensorData(TEMPERATURE_SENSOR, 10);
+  delay(5000);
+  
 }

@@ -5,10 +5,15 @@
 #include <PubSubClient.h>
 #include <Arduino.h>
 
+#define UPDATE_SENSOR_VALUE    1
 
-void setupHumiditySensor(const uint8_t pin);
+#define HUMIDITY_SENSOR        1
+#define MOISTURE_SENSOR        2
+#define TEMPERATURE_SENSOR     3
 
 void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t port);
+
+void pushSensorData(uint8_t sensor, uint16_t value);
 
 void handleEvents();
 
