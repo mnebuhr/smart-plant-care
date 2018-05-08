@@ -1,0 +1,14 @@
+{
+  "name": "elastic-plant",
+  "version": "1.0.0",
+  "description": "Elastic Search Logger",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marion Nebuhr, Klaas Nebuhr",
+  "license": "ISC",
+  "dependencies": {
+    "elasticsearch": "^14.2.2"
+  }
+}
