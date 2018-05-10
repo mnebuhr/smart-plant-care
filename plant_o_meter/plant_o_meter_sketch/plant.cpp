@@ -1,4 +1,15 @@
+#include <Adafruit_Sensor.h>
+#include <DHT_U.h>
+#include <DHT.h>
+
 #include "plant.h"
+
+#define DHTPIN            2         // Pin which is connected to the DHT sensor.
+#define DHTTYPE           DHT22     // DHT 22 (AM2302)
+
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
+sensors_event_t event;
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -82,6 +93,33 @@ static void reconnect() {
     }
   }
 }
+void setupSensors() {
+  dht.begin();
+  Serial.println("DHTxx Unified Sensor Example");
+  // Print temperature sensor details.
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println("------------------------------------");
+  Serial.println("Temperature");
+  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C");
+  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C");
+  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C");  
+  Serial.println("------------------------------------");
+  // Print humidity sensor details.
+  dht.humidity().getSensor(&sensor);
+  Serial.println("------------------------------------");
+  Serial.println("Humidity");
+  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
+  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
+  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
+  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");
+  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");
+  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  
+  Serial.println("------------------------------------");  
+}
 
 void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t port) {
   startWIFI(ssid, pwd);
@@ -98,5 +136,15 @@ void handleEvents() {
     client.publish("plant-o-meter/device/reconnect", clientid);
   }
   client.loop();
+}
+
+float getTemperature() {
+  dht.temperature().getEvent(&event);
+  return event.temperature;
+}
+
+float getHumidity() {
+  dht.humidity().getEvent(&event);
+  return event.relative_humidity;
 }
 

@@ -15,12 +15,19 @@ const char* mqtt_server = "xxx.xxx.xxx.xxx";
 const uint16_t port     = 999;
 
 void setup() {
-  setupMqtt(ssid, password, mqtt_server, port);
+  //setupMqtt(ssid, password, mqtt_server, port);
+  setupSensors();
 }
 
 void loop() {
   handleEvents();
-  pushSensorData(TEMPERATURE_SENSOR, 10);
+  //pushSensorData(TEMPERATURE_SENSOR, 10);
+  float temperature = getTemperature();
+  if(isnan(temperature)) {
+    Serial.println("Error while reading the temperature.");
+  } else {
+    Serial.println(temperature);
+  }
   delay(5000);
   
 }

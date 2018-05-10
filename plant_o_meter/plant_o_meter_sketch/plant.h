@@ -13,8 +13,14 @@
 
 void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t port);
 
+void setupSensors();
+
 void pushSensorData(uint8_t sensor, uint16_t value);
 
 void handleEvents();
+
+float getTemperature();
+
+float getHumidity();
 
 #endif
