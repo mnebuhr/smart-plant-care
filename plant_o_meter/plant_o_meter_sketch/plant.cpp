@@ -4,7 +4,7 @@
 
 #include "plant.h"
 
-#define DHTPIN            2         // Pin which is connected to the DHT sensor.
+#define DHTPIN            4         // Pin which is connected to the DHT sensor.
 #define DHTTYPE           DHT22     // DHT 22 (AM2302)
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
