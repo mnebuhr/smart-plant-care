@@ -2,6 +2,8 @@
 #include <DHT_U.h>
 #include <DHT.h>
 
+#define DEBUG
+
 #include "plant.h"
 
 #define DHTPIN            4         // Pin which is connected to the DHT sensor.
@@ -25,14 +27,21 @@ static const char hex[17] = "0123456789ABCDEF";
  * For the moment this has no impact as we are only sending data.
  */
 static void callback(char* topic, byte* payload, unsigned int length) {
+    
+}
+
+uint16_t scaledInt(const float value, const uint8_t factor) {
+  Serial.println(value);
+  Serial.println((uint16_t)(value*factor+0.5));
   
+  return (uint16_t)(value*factor+0.5);
 }
 
 void pushSensorData(uint8_t sensor, uint16_t value) {
   data[USER_DATA+0] = sensor;
   data[USER_DATA+1] = highByte(value);
   data[USER_DATA+2] = lowByte(value);
-  client.publish("plant-o-meter/device/data", data, USER_DATA+3);
+  client.publish("/plant-o-meter/device/data", data, USER_DATA+3);
 }
 
 static void startWIFI(const char* ssid, const char* password) {
@@ -95,10 +104,13 @@ static void reconnect() {
 }
 void setupSensors() {
   dht.begin();
+  #ifdef DEBUG
   Serial.println("DHTxx Unified Sensor Example");
+  #endif
   // Print temperature sensor details.
   sensor_t sensor;
   dht.temperature().getSensor(&sensor);
+  #ifdef DEBUG
   Serial.println("------------------------------------");
   Serial.println("Temperature");
   Serial.print  ("Sensor:       "); Serial.println(sensor.name);
@@ -108,8 +120,10 @@ void setupSensors() {
   Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C");
   Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C");  
   Serial.println("------------------------------------");
+  #endif
   // Print humidity sensor details.
   dht.humidity().getSensor(&sensor);
+  #ifdef DEBUG
   Serial.println("------------------------------------");
   Serial.println("Humidity");
   Serial.print  ("Sensor:       "); Serial.println(sensor.name);
@@ -119,6 +133,7 @@ void setupSensors() {
   Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");
   Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  
   Serial.println("------------------------------------");  
+  #endif
 }
 
 void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t port) {
@@ -126,14 +141,14 @@ void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t p
   client.setServer(server, port);
   client.setCallback(callback);
   reconnect();
-  client.publish("plant-o-meter/device/connect", clientid);
+  client.publish("/plant-o-meter/device/connect", clientid);
 }
 
 void handleEvents() {
   if (!client.connected()) {
     reconnect();
     // Once connected, publish an announcement...
-    client.publish("plant-o-meter/device/reconnect", clientid);
+    client.publish("/plant-o-meter/device/reconnect", clientid);
   }
   client.loop();
 }
