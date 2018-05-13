@@ -1,0 +1,10 @@
+{
+    "MqttServer" : {
+      "ip" : "mqtt://192.168.178.77",
+      "port" : 1883
+    },
+    "ElasticSearch" : {
+    	"server" : "nebuhrhood",
+    	"port"   : 9200
+    }
+}

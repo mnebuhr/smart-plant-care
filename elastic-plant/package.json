@@ -9,6 +9,8 @@
   "author": "Marion Nebuhr, Klaas Nebuhr",
   "license": "ISC",
   "dependencies": {
-    "elasticsearch": "^14.2.2"
+    "config": "^1.30.0",
+    "elasticsearch": "^14.2.2",
+    "mqtt": "^2.18.0"
   }
 }
