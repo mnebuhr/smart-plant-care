@@ -47,24 +47,51 @@ client.on('connect', function () {
 })
  
 client.on('message', function (topic, message) {
-  console.log(topic.toString())
-  let data = message;
-  let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
-  console.log('Message from ' + mac);
-  let sensorId = data.readUInt8(6);
-  let sensor = sensors[sensorId];
-  let value  = data.readUInt16BE(7)/100;
-  console.log('Sensor = ' + sensor.name);
-  console.log('Value = ' + value);
-  elastic_client.index({
-  	index: 'testindex',
-  	type: 'sensordata',
-  	body: {
-  		mac: mac,
-  		sensor: sensorId,
-  		name: sensor.name,
-  		value: value,
-  		timestamp: new Date()
-  	}
-  }).then(() => console.log("Stored value to elastic search"));
+  	console.log(topic.toString())
+  	if (topic == '/plant-o-meter/device/data') {
+		let data = message;
+	  	let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
+	  	console.log('Message from ' + mac);
+	  	let sensorId = data.readUInt8(6);
+	  	let sensor = sensors[sensorId];
+	  	let value  = data.readUInt16BE(7)/100;
+	  	console.log('Sensor = ' + sensor.name);
+	  	console.log('Value = ' + value);
+	  	elastic_client.index({
+	  		index: 'testindex',
+	  		type: 'sensordata',
+		  	body: {
+		  		mac: mac,
+		  		sensor: sensorId,
+		  		name: sensor.name,
+		  		value: value,
+		  		timestamp: new Date()
+		  	}
+	  	}).then(() => console.log("Stored value to elastic search"));
+    } else if (topic == '/plant-o-meter/device/connect') {
+        let data = message;
+        let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
+        console.log(mac + ' connected')
+        
+    } else if (topic == '/plant-o-meter/device/reconnect') {
+        let data = message;
+        let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
+        console.log(mac + ' reconnected')
+
+    } else if (topic == '/plant-o-meter/device/rssi') {
+        let data = message;
+        let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
+        console.log(mac + ' sent rssi')
+
+    } else if (topic == '/plant-o-meter/device/hibernate') {
+        let data = message;
+        let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
+        console.log(mac + ' connected')
+
+    } else if (topic == '/plant-o-meter/device/awake') {
+        let data = message;
+        let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
+        console.log(mac + ' woke up')
+
+    }
 })
