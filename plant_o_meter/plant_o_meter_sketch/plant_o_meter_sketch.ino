@@ -62,8 +62,7 @@ void setup() {
     Serial.println(humidity);
     #endif
   }
-  pushRSSI();   // Sending the actual rssi to the mqtt broker
-  delay(1000);
+  pushRSSI(NUMBER_OF_TRIES);   // Sending the actual rssi to the mqtt broker
   hibernate(DEEP_SLEEP_SECONDS);
 }
 

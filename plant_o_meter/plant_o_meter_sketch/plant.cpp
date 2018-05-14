@@ -187,28 +187,48 @@ float getHumidity(uint8_t number_of_tries) {
   return event.relative_humidity;
 }
 
-void pushRSSI() {
+/**
+   Return the quality (Received Signal Strength Indicator)
+   of the WiFi network.
+   Returns a number between 0 and 100 if WiFi is connected.
+   Returns -1 if WiFi is disconnected.
+
+   Thanks to tttapa. 
+   From the git repo https://github.com/tttapa/Projects/blob/master/ESP8266/WiFi/RSSI-WiFi-Quality/RSSI-WiFi-Quality.ino
+*/
+uint8_t getRSSI() {
+  if (WiFi.status() != WL_CONNECTED) return -1;
+  int dBm = WiFi.RSSI();
+  if (dBm <= -100) return 0;
+  if (dBm >= -50) return 100;
+  return 2 * (dBm + 100);  
+}
+
+void pushRSSI(uint8_t number_of_tries) {
   reconnect();
-  uint32_t rssi = WiFi.RSSI();
-  #ifdef DEBUG
-  Serial.print(F("Empfang in db:"));
-  Serial.println(rssi);
-  #endif
-  data[USER_DATA+3] = rssi & 0xFF;
-  rssi >>= 8;
-  data[USER_DATA+2] = rssi & 0xFF;
-  rssi >>= 8;
-  data[USER_DATA+1] = rssi & 0xFF;  
-  rssi >>= 8;
-  data[USER_DATA+0] = rssi & 0xFF;    
-  client.publish("/plant-o-meter/device/rssi", data, USER_DATA+4);
-  client.loop();
+  while(number_of_tries > 0) {
+    uint8_t rssi = getRSSI();
+    #ifdef DEBUG
+    Serial.print(F("Empfang in db:"));
+    Serial.println(rssi);
+    #endif
+    if (rssi >= 0) {
+      data[USER_DATA+0] = rssi;    
+      client.publish("/plant-o-meter/device/rssi", data, USER_DATA+1);
+      client.loop();  
+      return;
+    }
+    number_of_tries--;
+  }
 }
 
 void hibernate(uint8_t seconds) {
   client.publish("/plant-o-meter/device/hibernate", clientid);
+  delay(1000);
+  #ifdef DEBUG
   Serial.print(F("Deep Sleep in seconds: "));
   Serial.println(seconds);
+  #endif
   ESP.deepSleep(seconds * 1e6);
 }
 
