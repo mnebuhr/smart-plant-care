@@ -44,6 +44,5 @@ void loop() {
     pushSensorData(HUMIDITY_SENSOR, scaledInt(humidity, 100));
     Serial.println(humidity);
   }  
-  //ESP.deepSleep(2000e6);
-  delay(5000);  
+  hibernate(5);  
 }

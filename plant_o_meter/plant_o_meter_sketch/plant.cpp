@@ -19,6 +19,9 @@ PubSubClient client(espClient);
 char clientid[18];
 static uint8_t data[16];   // Data Array for the mqtt message
 static const char hex[17] = "0123456789ABCDEF";
+static char* m_ssid;
+static char* m_password;
+
 
 #define USER_DATA 6
 
@@ -46,6 +49,8 @@ void pushSensorData(uint8_t sensor, uint16_t value) {
 
 static void startWIFI(const char* ssid, const char* password) {
   uint8_t index = 0;
+  //m_ssid     = ssid;
+  //m_password = paasword;
 
   WiFi.begin(ssid, password);
 
@@ -161,5 +166,22 @@ float getTemperature() {
 float getHumidity() {
   dht.humidity().getEvent(&event);
   return event.relative_humidity;
+}
+
+void hibernate(uint8_t seconds) {
+  client.publish("/plant-o-meter/device/hibernate", clientid);
+  ESP.deepSleep(seconds * 1e6);
+  WiFi.forceSleepWake();
+  WiFi.begin();
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    #ifdef DEBUG
+    Serial.print(".");
+    #endif
+  }
+  
+  reconnect();
+  client.publish("/plant-o-meter/device/awake", clientid);
 }
 

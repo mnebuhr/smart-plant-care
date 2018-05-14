@@ -25,4 +25,6 @@ float getHumidity();
 
 uint16_t scaledInt(const float value, const uint8_t factor);
 
+void hibernate(uint8_t seconds);
+
 #endif
