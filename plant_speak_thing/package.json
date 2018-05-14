@@ -1,0 +1,20 @@
+{
+  "name": "plant_speak_thing",
+  "version": "1.0.0",
+  "description": "ThingSpeak Connector for the Smart Plant Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "IoT",
+    "Node.js",
+    "Smile"
+  ],
+  "author": "Klaas Nebuhr, Marion Nebuhr",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "querystring": "^0.2.0"
+  }
+}
