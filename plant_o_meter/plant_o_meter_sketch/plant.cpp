@@ -40,13 +40,6 @@ uint16_t scaledInt(const float value, const uint8_t factor) {
   return (uint16_t)(value*factor+0.5);
 }
 
-void pushSensorData(uint8_t sensor, uint16_t value) {
-  data[USER_DATA+0] = sensor;
-  data[USER_DATA+1] = highByte(value);
-  data[USER_DATA+2] = lowByte(value);
-  client.publish("/plant-o-meter/device/data", data, USER_DATA+3);
-}
-
 static void startWIFI(const char* ssid, const char* password) {
   uint8_t index = 0;
   //m_ssid     = ssid;
@@ -107,6 +100,15 @@ static void reconnect() {
     }
   }
 }
+
+void pushSensorData(uint8_t sensor, uint16_t value) {
+  reconnect();
+  data[USER_DATA+0] = sensor;
+  data[USER_DATA+1] = highByte(value);
+  data[USER_DATA+2] = lowByte(value);
+  client.publish("/plant-o-meter/device/data", data, USER_DATA+3);
+}
+
 void setupSensors() {
   dht.begin();
   #ifdef DEBUG
@@ -166,6 +168,19 @@ float getTemperature() {
 float getHumidity() {
   dht.humidity().getEvent(&event);
   return event.relative_humidity;
+}
+
+void pushRSSI() {
+  reconnect();
+  long rssi = WiFi.RSSI();
+  data[USER_DATA+3] = rssi & 0xFF;
+  rssi >>= 8;
+  data[USER_DATA+2] = rssi & 0xFF;
+  rssi >>= 8;
+  data[USER_DATA+1] = rssi & 0xFF;  
+  rssi >>= 8;
+  data[USER_DATA+0] = rssi & 0xFF;    
+  client.publish("/plant-o-meter/device/rssi", data, USER_DATA+4);
 }
 
 void hibernate(uint8_t seconds) {

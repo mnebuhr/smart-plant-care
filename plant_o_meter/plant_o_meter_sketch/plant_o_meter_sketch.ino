@@ -37,12 +37,15 @@ void loop() {
     pushSensorData(TEMPERATURE_SENSOR, scaledInt(temperature, 100));
     Serial.println(temperature);
   }
+  // Now reading the temperature value in celsius. If reading was successfull,
+  // Send the data to the mqtt broker.
   float humidity = getHumidity();
   if(isnan(humidity)) {
     Serial.println("Error while reading the humidity.");
   } else {
     pushSensorData(HUMIDITY_SENSOR, scaledInt(humidity, 100));
     Serial.println(humidity);
-  }  
-  hibernate(5);  
+  }
+  pushRSSI();   // Sending the actual rssi to the mqtt broker
+  hibernate(5); // Go to hibernate mode (deep sleep) for 5 seconds
 }

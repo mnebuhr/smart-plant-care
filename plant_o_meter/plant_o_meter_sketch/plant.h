@@ -17,6 +17,8 @@ void setupSensors();
 
 void pushSensorData(uint8_t sensor, uint16_t value);
 
+void pushRSSI();
+
 void handleEvents();
 
 float getTemperature();
