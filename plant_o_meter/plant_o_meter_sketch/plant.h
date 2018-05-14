@@ -21,9 +21,9 @@ void pushRSSI();
 
 void handleEvents();
 
-float getTemperature();
+float getTemperature(uint8_t number_of_tries);
 
-float getHumidity();
+float getHumidity(uint8_t number_of_tries);
 
 uint16_t scaledInt(const float value, const uint8_t factor);
 

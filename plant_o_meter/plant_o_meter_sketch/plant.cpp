@@ -3,6 +3,7 @@
 #include <DHT.h>
 
 #define DEBUG
+#define ESPFix  // WiFi fix: https://github.com/esp8266/Arduino/issues/2186
 
 #include "plant.h"
 
@@ -34,9 +35,6 @@ static void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 uint16_t scaledInt(const float value, const uint8_t factor) {
-  Serial.println(value);
-  Serial.println((uint16_t)(value*factor+0.5));
-  
   return (uint16_t)(value*factor+0.5);
 }
 
@@ -47,6 +45,13 @@ static void startWIFI(const char* ssid, const char* password) {
 
   WiFi.begin(ssid, password);
 
+  #ifdef ESPFix
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_OFF);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  #endif
+  
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     #ifdef DEBUG
@@ -89,6 +94,7 @@ static void reconnect() {
       
       // ... and resubscribe
       client.subscribe("smart-plant");
+      client.publish("/huhuhuuuuu","moinsen");
     } else {
       #ifdef DEBUG
       Serial.print(F("failed, rc="));
@@ -103,43 +109,46 @@ static void reconnect() {
 
 void pushSensorData(uint8_t sensor, uint16_t value) {
   reconnect();
+  Serial.print(F("Pushing sensor data to mqtt broker. Connected:"));
   data[USER_DATA+0] = sensor;
   data[USER_DATA+1] = highByte(value);
   data[USER_DATA+2] = lowByte(value);
+  Serial.println(client.connected());
+  Serial.print(F("Client MAC: "));Serial.println(clientid);
   client.publish("/plant-o-meter/device/data", data, USER_DATA+3);
 }
 
 void setupSensors() {
   dht.begin();
   #ifdef DEBUG
-  Serial.println("DHTxx Unified Sensor Example");
+  Serial.println(F("DHTxx Unified Sensor Example"));
   #endif
   // Print temperature sensor details.
   sensor_t sensor;
   dht.temperature().getSensor(&sensor);
   #ifdef DEBUG
-  Serial.println("------------------------------------");
-  Serial.println("Temperature");
-  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C");
-  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C");
-  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C");  
-  Serial.println("------------------------------------");
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Temperature"));
+  Serial.print  (F("Sensor:       ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:   ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:    ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:    ")); Serial.print(sensor.max_value); Serial.println(" *C");
+  Serial.print  (F("Min Value:    ")); Serial.print(sensor.min_value); Serial.println(" *C");
+  Serial.print  (F("Resolution:   ")); Serial.print(sensor.resolution); Serial.println(" *C");  
+  Serial.println(F("------------------------------------"));
   #endif
   // Print humidity sensor details.
   dht.humidity().getSensor(&sensor);
   #ifdef DEBUG
-  Serial.println("------------------------------------");
-  Serial.println("Humidity");
-  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");
-  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");
-  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  
-  Serial.println("------------------------------------");  
+  Serial.println(F("------------------------------------"));
+  Serial.println(F("Humidity"));
+  Serial.print  (F("Sensor:       ")); Serial.println(sensor.name);
+  Serial.print  (F("Driver Ver:   ")); Serial.println(sensor.version);
+  Serial.print  (F("Unique ID:    ")); Serial.println(sensor.sensor_id);
+  Serial.print  (F("Max Value:    ")); Serial.print(sensor.max_value); Serial.println("%");
+  Serial.print  (F("Min Value:    ")); Serial.print(sensor.min_value); Serial.println("%");
+  Serial.print  (F("Resolution:   ")); Serial.print(sensor.resolution); Serial.println("%");  
+  Serial.println(F("------------------------------------"));  
   #endif
 }
 
@@ -160,19 +169,31 @@ void handleEvents() {
   client.loop();
 }
 
-float getTemperature() {
-  dht.temperature().getEvent(&event);
+float getTemperature(uint8_t number_of_tries) {
+  while(number_of_tries > 0) {
+    dht.temperature().getEvent(&event);
+    if (!isnan(event.temperature)) return event.temperature;
+    number_of_tries--;
+  }
   return event.temperature;
 }
 
-float getHumidity() {
-  dht.humidity().getEvent(&event);
+float getHumidity(uint8_t number_of_tries) {
+  while(number_of_tries > 0) {
+    dht.humidity().getEvent(&event);
+    if (!isnan(event.relative_humidity)) return event.relative_humidity;
+    number_of_tries--;
+  }
   return event.relative_humidity;
 }
 
 void pushRSSI() {
   reconnect();
-  long rssi = WiFi.RSSI();
+  uint32_t rssi = WiFi.RSSI();
+  #ifdef DEBUG
+  Serial.print(F("Empfang in db:"));
+  Serial.println(rssi);
+  #endif
   data[USER_DATA+3] = rssi & 0xFF;
   rssi >>= 8;
   data[USER_DATA+2] = rssi & 0xFF;
@@ -185,18 +206,8 @@ void pushRSSI() {
 
 void hibernate(uint8_t seconds) {
   client.publish("/plant-o-meter/device/hibernate", clientid);
+  Serial.print(F("Deep Sleep in seconds: "));
+  Serial.println(seconds);
   ESP.deepSleep(seconds * 1e6);
-  WiFi.forceSleepWake();
-  WiFi.begin();
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    #ifdef DEBUG
-    Serial.print(".");
-    #endif
-  }
-  
-  reconnect();
-  client.publish("/plant-o-meter/device/awake", clientid);
 }
 
