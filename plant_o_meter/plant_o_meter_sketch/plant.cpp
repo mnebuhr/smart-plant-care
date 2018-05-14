@@ -2,8 +2,8 @@
 #include <DHT_U.h>
 #include <DHT.h>
 
-#define DEBUG
-#define ESPFix  // WiFi fix: https://github.com/esp8266/Arduino/issues/2186
+//#define DEBUG
+//#define ESPFix  // WiFi fix: https://github.com/esp8266/Arduino/issues/2186
 
 #include "plant.h"
 
@@ -94,7 +94,6 @@ static void reconnect() {
       
       // ... and resubscribe
       client.subscribe("smart-plant");
-      client.publish("/huhuhuuuuu","moinsen");
     } else {
       #ifdef DEBUG
       Serial.print(F("failed, rc="));
@@ -116,6 +115,7 @@ void pushSensorData(uint8_t sensor, uint16_t value) {
   Serial.println(client.connected());
   Serial.print(F("Client MAC: "));Serial.println(clientid);
   client.publish("/plant-o-meter/device/data", data, USER_DATA+3);
+  client.loop();
 }
 
 void setupSensors() {
@@ -202,6 +202,7 @@ void pushRSSI() {
   rssi >>= 8;
   data[USER_DATA+0] = rssi & 0xFF;    
   client.publish("/plant-o-meter/device/rssi", data, USER_DATA+4);
+  client.loop();
 }
 
 void hibernate(uint8_t seconds) {

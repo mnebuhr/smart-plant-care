@@ -9,8 +9,8 @@
 
 #include "plant.h"
 
-#define DEBUG
-#define DEEP_SLEEP_SECONDS    5 //1800
+//#define DEBUG
+#define DEEP_SLEEP_SECONDS   1200
 #define NUMBER_OF_TRIES      10
 
 //const char* ssid        = "xxx";      
@@ -27,13 +27,13 @@ void setup() {
   Serial.begin(9600);
   Serial.setTimeout(2000);
   #endif
-  delay(2000);
+  //delay(2000);
   setupMqtt(ssid, password, mqtt_server, port);
   setupSensors();
 
   // Old Start of loop();
   //
-  delay(2000);
+  //delay(2000);
   handleEvents();
   float temperature = getTemperature(NUMBER_OF_TRIES);
   if(isnan(temperature)) {
@@ -63,7 +63,9 @@ void setup() {
     #endif
   }
   pushRSSI();   // Sending the actual rssi to the mqtt broker
+  delay(1000);
   hibernate(DEEP_SLEEP_SECONDS);
 }
 
-void loop() {}
+void loop() {
+}
