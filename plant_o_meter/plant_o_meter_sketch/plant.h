@@ -17,7 +17,7 @@ void setupSensors();
 
 void pushSensorData(uint8_t sensor, uint16_t value);
 
-void pushRSSI(uint8_t number_of_tries);
+void pushWifiSignalQuality(uint8_t number_of_tries);
 
 void handleEvents();
 

@@ -204,7 +204,7 @@ uint8_t getRSSI() {
   return 2 * (dBm + 100);  
 }
 
-void pushRSSI(uint8_t number_of_tries) {
+void pushWifiSignalQuality(uint8_t number_of_tries) {
   reconnect();
   while(number_of_tries > 0) {
     uint8_t rssi = getRSSI();
@@ -222,6 +222,13 @@ void pushRSSI(uint8_t number_of_tries) {
   }
 }
 
+/**
+ * Puts the nodemcu board into deep sleep mode. 
+ * The GPI16 Pin has to be connected to RST.
+ * Any code after this line will not be executed, 
+ * because when the hibernate phase ends, the
+ * board will be resetted.
+ */
 void hibernate(uint8_t seconds) {
   client.publish("/plant-o-meter/device/hibernate", clientid);
   delay(1000);
@@ -229,6 +236,6 @@ void hibernate(uint8_t seconds) {
   Serial.print(F("Deep Sleep in seconds: "));
   Serial.println(seconds);
   #endif
-  ESP.deepSleep(seconds * 1e6);
+  ESP.deepSleep(seconds * 10e6); // deepSleep needs parameter to be in microseconds
 }
 
