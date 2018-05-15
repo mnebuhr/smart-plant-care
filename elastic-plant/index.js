@@ -29,6 +29,9 @@ let sensors = {
 	},
 	3 : {
 		name : 'TEMPERATURE_SENSOR'
+	},
+	100 : {
+		name : 'WIFI_QUALITY_SENSOR'
 	}
 }
 
@@ -81,7 +84,21 @@ client.on('message', function (topic, message) {
     } else if (topic == '/plant-o-meter/device/rssi') {
         let data = message;
         let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
-        console.log(mac + ' sent rssi')
+        let value = data[6];
+        let sensorId = 100;
+
+        elastic_client.index({
+	  		index: 'testindex',
+	  		type: 'sensordata',
+		  	body: {
+		  		mac: mac,
+		  		sensor: sensorId,
+		  		name: sensor.name,
+		  		value: value,
+		  		timestamp: new Date()
+		  	}
+	  	}).then(() => console.log("Stored value to elastic search"));
+        console.log(mac + ' sent rssi value is ' + rssi + "%")
 
     } else if (topic == '/plant-o-meter/device/hibernate') {
         let data = message;
@@ -92,6 +109,5 @@ client.on('message', function (topic, message) {
         let data = message;
         let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
         console.log(mac + ' woke up')
-
     }
 })
