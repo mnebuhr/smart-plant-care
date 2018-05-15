@@ -46,7 +46,7 @@ elastic_client.ping({
 });
 
 client.on('connect', function () {
-	client.subscribe('/plant-o-meter/device/data')
+	client.subscribe('/plant-o-meter/device/#')
 })
  
 client.on('message', function (topic, message) {
