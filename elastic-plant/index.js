@@ -86,7 +86,8 @@ client.on('message', function (topic, message) {
         let mac =`${data[0].toString(16)}:${data[1].toString(16)}:${data[2].toString(16)}:${data[3].toString(16)}:${data[4].toString(16)}:${data[5].toString(16)}`;
         let value = data[6];
         let sensorId = 100;
-
+        let sensor = sensors[sensorId];
+	  	
         elastic_client.index({
 	  		index: 'testindex',
 	  		type: 'sensordata',
