@@ -99,7 +99,7 @@ client.on('message', function (topic, message) {
 		  		timestamp: new Date()
 		  	}
 	  	}).then(() => console.log("Stored value to elastic search"));
-        console.log(mac + ' sent rssi value is ' + rssi + "%")
+        console.log(mac + ' sent rssi value is ' + value + "%")
 
     } else if (topic == '/plant-o-meter/device/hibernate') {
         let data = message;
