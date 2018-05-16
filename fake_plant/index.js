@@ -1,5 +1,7 @@
 'use strict';
 
+var mqtt = require('mqtt')
+
 let config = require('config');
 
 let mqttConfig = config.get('MqttServer');
@@ -12,7 +14,12 @@ let intervall = plantsConfig.get('intervall') * 1000;
 
 console.log(`Using MqttServer at ${mqtt_ip}:${mqtt_port}`);
 
-let interValObj = setInterval(() => {
-	let randVal = Math.floor(Math.random() * Math.floor(5));
-	console.log(`Sending plant data ${randVal}`);
-}, intervall)
+var client  = mqtt.connect(mqtt_ip);
+
+client.on('connect', function () {
+	let interValObj = setInterval(() => {
+		let randVal = Math.floor(Math.random() * Math.floor(5));
+		console.log(`Sending plant data ${randVal}`);
+	}, intervall);
+})
+

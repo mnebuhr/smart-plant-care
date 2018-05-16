@@ -231,7 +231,7 @@ void pushWifiSignalQuality(uint8_t number_of_tries) {
  */
 void hibernate(uint8_t seconds) {
   client.publish("/plant-o-meter/device/hibernate", clientid);
-  delay(1000);
+  delay(2000);
   #ifdef DEBUG
   Serial.print(F("Deep Sleep in seconds: "));
   Serial.println(seconds);

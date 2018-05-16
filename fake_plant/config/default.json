@@ -1,7 +1,7 @@
 {
     "MqttServer" : {
-      "ip" : "127.0.0.1",
-      "port" : 9999
+      "ip" : "mqtt://192.168.178.77",
+      "port" : 1883
     },
     "Plants" : {
       "count" : 1,

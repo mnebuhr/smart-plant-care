@@ -33,6 +33,7 @@ void setup() {
   // Old Start of loop();
   //
   handleEvents();
+  pushWifiSignalQuality(NUMBER_OF_TRIES);   // Sending the actual rssi to the mqtt broker
   float temperature = getTemperature(NUMBER_OF_TRIES);
   if(isnan(temperature)) {
     #ifdef DEBUG
@@ -60,7 +61,6 @@ void setup() {
     Serial.println(humidity);
     #endif
   }
-  pushWifiSignalQuality(NUMBER_OF_TRIES);   // Sending the actual rssi to the mqtt broker
   hibernate(DEEP_SLEEP_SECONDS);
 }
 
