@@ -25,6 +25,8 @@ float getTemperature(uint8_t number_of_tries);
 
 float getHumidity(uint8_t number_of_tries);
 
+uint8_t getMoisture(const uint8_t pin, const uint16_t minValue, const uint16_t maxValue); 
+
 uint16_t scaledInt(const float value, const uint8_t factor);
 
 void hibernate(uint8_t seconds);

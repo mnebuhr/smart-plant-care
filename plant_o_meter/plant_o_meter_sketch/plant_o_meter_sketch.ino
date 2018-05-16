@@ -12,6 +12,7 @@
 //#define DEBUG
 #define DEEP_SLEEP_SECONDS   1200
 #define NUMBER_OF_TRIES      10
+#define MOISTURE_SENSOR_PIN  A0
 
 //const char* ssid        = "xxx";      
 //const char* password    = "YYY";
@@ -61,6 +62,11 @@ void setup() {
     Serial.println(humidity);
     #endif
   }
+
+  const uint8_t moisture = getMoisture(MOISTURE_SENSOR_PIN,1024,310);
+  pushSensorData(MOISTURE_SENSOR, moisture*100);
+    
+  
   hibernate(DEEP_SLEEP_SECONDS);
 }
 

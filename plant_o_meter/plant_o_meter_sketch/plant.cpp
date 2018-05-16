@@ -108,14 +108,26 @@ static void reconnect() {
 
 void pushSensorData(uint8_t sensor, uint16_t value) {
   reconnect();
+  #ifdef DEBUG
   Serial.print(F("Pushing sensor data to mqtt broker. Connected:"));
+  #endif
   data[USER_DATA+0] = sensor;
   data[USER_DATA+1] = highByte(value);
   data[USER_DATA+2] = lowByte(value);
+  #ifdef DEBUG
   Serial.println(client.connected());
   Serial.print(F("Client MAC: "));Serial.println(clientid);
+  #endif
   client.publish("/plant-o-meter/device/data", data, USER_DATA+3);
   client.loop();
+}
+
+uint8_t getMoisture(const uint8_t pin, const uint16_t minValue, const uint16_t maxValue) {
+  #ifdef DEBUG
+  Serial.print(F("Reading moisture sensor value"));
+  #endif
+  //map(output_value,1024,310,0,100);
+  return map(analogRead(pin),minValue,maxValue,0,100);
 }
 
 void setupSensors() {
