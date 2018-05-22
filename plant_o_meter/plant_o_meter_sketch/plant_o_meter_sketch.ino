@@ -30,6 +30,7 @@ void setup() {
   #endif
   setupMqtt(ssid, password, mqtt_server, port);
   setupSensors();
+  setDeepSleepTimer(1200);
 
   // Old Start of loop();
   //
@@ -65,9 +66,12 @@ void setup() {
 
   const uint8_t moisture = getMoisture(MOISTURE_SENSOR_PIN,1024,310);
   pushSensorData(MOISTURE_SENSOR, moisture*100);
+
+  pushSensorData(MOISTURE_SENSOR_RAW,getMoistureRaw(MOISTURE_SENSOR_PIN)); 
+  
     
   
-  hibernate(DEEP_SLEEP_SECONDS);
+  hibernate();
 }
 
 void loop() {

@@ -22,6 +22,7 @@ static uint8_t data[16];   // Data Array for the mqtt message
 static const char hex[17] = "0123456789ABCDEF";
 static char* m_ssid;
 static char* m_password;
+static uint64_t deep_sleep_timeout = 3600;
 
 
 #define USER_DATA 6
@@ -31,7 +32,19 @@ static char* m_password;
  * For the moment this has no impact as we are only sending data.
  */
 static void callback(char* topic, byte* payload, unsigned int length) {
-    
+  if (String(topic).equals(String("/") + String(clientid) + String("/deepsleep"))) {
+    setDeepSleepTimer((payload[0] << 8) | payload[1]);
+  }
+}
+
+void setDeepSleepTimer(uint16_t seconds) {
+  deep_sleep_timeout = seconds;
+  if (deep_sleep_timeout == 0) deep_sleep_timeout = 3600;
+  #ifdef DEBUG
+  Serial.print(F("New value for deep sleep timer is "));
+  Serial.print(deep_sleep_timeout);
+  Serial.println(F( seconds."));
+  #endif
 }
 
 uint16_t scaledInt(const float value, const uint8_t factor) {
@@ -87,13 +100,13 @@ static void reconnect() {
     #endif
     
     // Attempt to connect
-    if (client.connect("plant-o-meter")) {
+    if (client.connect(clientid)) {
       #ifdef DEBUG
       Serial.println(F("connected"));
       #endif
       
       // ... and resubscribe
-      client.subscribe("smart-plant");
+      client.subscribe(String("/" + String(clientid) + "/#").c_str());
     } else {
       #ifdef DEBUG
       Serial.print(F("failed, rc="));
@@ -124,10 +137,21 @@ void pushSensorData(uint8_t sensor, uint16_t value) {
 
 uint8_t getMoisture(const uint8_t pin, const uint16_t minValue, const uint16_t maxValue) {
   #ifdef DEBUG
-  Serial.print(F("Reading moisture sensor value"));
+  Serial.println(F("Reading moisture sensor value."));
   #endif
-  //map(output_value,1024,310,0,100);
-  return map(analogRead(pin),minValue,maxValue,0,100);
+  int value = analogRead(pin); 
+  #ifdef DEBUG
+  Serial.print(F("Unmapped value is "));
+  Serial.print(value);
+  Serial.print(F(". Mapped value is "));
+  Serial.println(map(value,minValue,maxValue,0,100));
+  #endif
+  
+  return map(value,minValue,maxValue,0,100);
+}
+
+uint16_t getMoistureRaw(const uint8_t pin) {
+  return analogRead(pin);
 }
 
 void setupSensors() {
@@ -241,13 +265,13 @@ void pushWifiSignalQuality(uint8_t number_of_tries) {
  * because when the hibernate phase ends, the
  * board will be resetted.
  */
-void hibernate(uint8_t seconds) {
+void hibernate() {
   client.publish("/plant-o-meter/device/hibernate", clientid);
   delay(2000);
   #ifdef DEBUG
   Serial.print(F("Deep Sleep in seconds: "));
   Serial.println(seconds);
   #endif
-  ESP.deepSleep(seconds * 10e6); // deepSleep needs parameter to be in microseconds
+  ESP.deepSleep(deep_sleep_timeout * 10e6); // deepSleep needs parameter to be in microseconds
 }
 

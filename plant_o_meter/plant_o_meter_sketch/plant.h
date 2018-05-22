@@ -9,7 +9,10 @@
 
 #define HUMIDITY_SENSOR        1
 #define MOISTURE_SENSOR        2
+#define MOISTURE_SENSOR_RAW   12
 #define TEMPERATURE_SENSOR     3
+
+void setDeepSleepTimer(uint16_t seconds);
 
 void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t port);
 
@@ -27,8 +30,10 @@ float getHumidity(uint8_t number_of_tries);
 
 uint8_t getMoisture(const uint8_t pin, const uint16_t minValue, const uint16_t maxValue); 
 
+uint16_t getMoistureRaw(const uint8_t pin);
+
 uint16_t scaledInt(const float value, const uint8_t factor);
 
-void hibernate(uint8_t seconds);
+void hibernate();
 
 #endif
