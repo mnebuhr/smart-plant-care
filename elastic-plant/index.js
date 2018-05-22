@@ -30,6 +30,9 @@ let sensors = {
 	3 : {
 		name : 'TEMPERATURE_SENSOR'
 	},
+	12 : {
+		name : 'MOISTURE_SENSOR_RAW'
+	},
 	100 : {
 		name : 'WIFI_QUALITY_SENSOR'
 	}
