@@ -13,26 +13,20 @@ const myCamera = new PiCamera({
   nopreview: true,
 });
 
-
-myCamera.snap()
-  .then((result) => {
-    // Your picture was captured
-    console.log(result);
-  })
-  .catch((error) => {
-     // Handle your error
-  });
-
-app.get('/', function(req, res) {
-  res.sendFile(__dirname + '/plant.jpg');
+function takePicture() {
   myCamera.snap()
     .then((result) => {
-      // Your picture was captured
-      console.log(result);
+ 	setTimeout(takePicture,1);   
     })
     .catch((error) => {
        // Handle your error
     });
+}
+
+takePicture();
+
+app.get('/', function(req, res) {
+  res.sendFile(__dirname + '/plant.jpg');
 });
 
 http.listen(3000, function() {
