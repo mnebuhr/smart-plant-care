@@ -2,14 +2,15 @@
 #include <DHT_U.h>
 #include <DHT.h>
 
-//#define DEBUG
-//#define ESPFix  // WiFi fix: https://github.com/esp8266/Arduino/issues/2186
-
 #include "plant.h"
 
 #define DHTPIN            4         // Pin which is connected to the DHT sensor.
 #define DHTTYPE           DHT22     // DHT 22 (AM2302)
 
+//#define DEBUG
+//#define ESPFix  // WiFi fix: https://github.com/esp8266/Arduino/issues/2186
+//#define MQTTLOG
+ 
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
 sensors_event_t event;
@@ -22,10 +23,19 @@ static uint8_t data[16];   // Data Array for the mqtt message
 static const char hex[17] = "0123456789ABCDEF";
 static char* m_ssid;
 static char* m_password;
-static uint64_t deep_sleep_timeout = 3600;
+static uint64_t deep_sleep_timeout = 500;
 
 
 #define USER_DATA 6
+
+void logDebug(String msg) {
+  #ifdef DEBUG
+  Serial.println(msg.c_str());
+  #endif
+  #ifdef MQTTLOG
+  client.publish("/plant-o-meter/device/log", msg.c_str());
+  #endif
+}
 
 /**
  * Receives a new message.
@@ -38,14 +48,17 @@ static void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void setDeepSleepTimer(uint16_t seconds) {
-  deep_sleep_timeout = seconds;
-  if (deep_sleep_timeout == 0) deep_sleep_timeout = 3600;
-  #ifdef DEBUG
-  Serial.print(F("New value for deep sleep timer is "));
-  Serial.print(deep_sleep_timeout);
-  Serial.println(F( seconds."));
+  deep_sleep_timeout = seconds & 0xFFFF;
+  if (deep_sleep_timeout == 0) deep_sleep_timeout = 500;
+  
+  #if defined(DEBUG) || defined(MQTTLOG)
+  String payload = "New value for deep sleep timer is ";
+  payload += (long)(deep_sleep_timeout);
+  payload += " seconds.";
+  logDebug(payload);
   #endif
 }
+
 
 uint16_t scaledInt(const float value, const uint8_t factor) {
   return (uint16_t)(value*factor+0.5);
@@ -72,11 +85,10 @@ static void startWIFI(const char* ssid, const char* password) {
     #endif
   }
 
-  #ifdef DEBUG
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  #if defined(DEBUG) || defined(MQTTLOG)
+  String msg = "WiFi connected. IP address: ";
+  msg += WiFi.localIP();
+  logDebug(msg);
   #endif
 
   WiFi.macAddress(data);
@@ -268,10 +280,13 @@ void pushWifiSignalQuality(uint8_t number_of_tries) {
 void hibernate() {
   client.publish("/plant-o-meter/device/hibernate", clientid);
   delay(2000);
-  #ifdef DEBUG
-  Serial.print(F("Deep Sleep in seconds: "));
-  Serial.println(seconds);
+  #if defined(DEBUG) || defined(MQTTLOG)
+  String msg = F("Deep Sleep in seconds: ");
+  msg += (long)(deep_sleep_timeout);
+  msg += " in micros ";
+  msg += (deep_sleep_timeout * 1e6);
+  logDebug(msg);
   #endif
-  ESP.deepSleep(deep_sleep_timeout * 10e6); // deepSleep needs parameter to be in microseconds
+  ESP.deepSleep(deep_sleep_timeout * 1e6); // deepSleep needs parameter to be in microseconds
 }
 

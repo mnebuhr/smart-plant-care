@@ -10,6 +10,7 @@
 #include "plant.h"
 
 //#define DEBUG
+
 #define DEEP_SLEEP_SECONDS   1200
 #define NUMBER_OF_TRIES      10
 #define MOISTURE_SENSOR_PIN  A0
@@ -64,12 +65,10 @@ void setup() {
     #endif
   }
 
-  const uint8_t moisture = getMoisture(MOISTURE_SENSOR_PIN,1024,310);
+  const uint8_t moisture = getMoisture(MOISTURE_SENSOR_PIN,900,280);
   pushSensorData(MOISTURE_SENSOR, moisture*100);
 
   pushSensorData(MOISTURE_SENSOR_RAW,getMoistureRaw(MOISTURE_SENSOR_PIN)); 
-  
-    
   
   hibernate();
 }
