@@ -7,5 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "color-convert": "^1.9.2",
+    "get-pixels": "^3.3.0"
+  }
 }

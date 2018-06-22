@@ -9,10 +9,14 @@
 #define NUM_LEDS 49
 #define DATA_PIN D4
 
-#define FILL_RGB         1
-#define FILL_HSV         2
-#define SET_PIXEL_AT_RGB 3
-#define SET_PIXEL_AT_HSV 4
+// COMMANDS
+#define FILL             1
+#define WRITE_RAW        2
+#define SET_PIXEL_AT     3
+#define SHOW             4
+
+//FLAGS
+#define UPDATE           2
 
 const char* ssid        = "FRITZ!Box 6360 Cable";      
 const char* password    = "4249789363748310";
@@ -22,6 +26,7 @@ WiFiUDP udp;
 CRGB leds[NUM_LEDS];
 
 void setup() {
+  Serial.begin(9600);
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -39,26 +44,35 @@ void loop() {
   int packetSize = udp.parsePacket();
   if (packetSize > 0)
   {
-    Serial.print("Received packet of size ");
-    Serial.println(packetSize);
     udp.read(packetBuffer, UDP_PACKET_SIZE);
     switch(packetBuffer[0]) {
-      case FILL_RGB: 
-        fill_solid(leds, NUM_LEDS, CRGB(packetBuffer[1],packetBuffer[2],packetBuffer[3]));
+      case FILL: 
+        fill_solid(leds, NUM_LEDS, CRGB(packetBuffer[2],packetBuffer[3],packetBuffer[4]));
+        if (packetBuffer[1] & UPDATE) FastLED.show(); 
+        break;
+      case SET_PIXEL_AT:
+        leds[packetBuffer[2]] = CRGB(packetBuffer[3],packetBuffer[4],packetBuffer[5]);
+        if (packetBuffer[1] & UPDATE) FastLED.show(); 
+        break;        
+      case WRITE_RAW:
+        Serial.println(F("Writing raw data"));
+        // Array Copy von packetBuffer to leds;
+        /**
+         * Byte:
+         * 0: Command
+         * 1: Flags
+         * 2: Number of Leds
+         * 3: Offset (Which led to start from)
+         */
+        Serial.print(F("Number of leds: ")); Serial.println(packetBuffer[2]);
+        Serial.print(F("Offset: ")); Serial.println(packetBuffer[3]);
+         
+        memcpy(leds+(packetBuffer[3]*3),packetBuffer+4,packetBuffer[2]*3);
+        if (packetBuffer[1] & UPDATE) FastLED.show(); 
+        break;
+      case SHOW:
         FastLED.show();
         break;
-      case FILL_HSV: 
-        fill_solid(leds, NUM_LEDS, CHSV(packetBuffer[1],packetBuffer[2],packetBuffer[3]));
-        FastLED.show();
-        break;
-      case SET_PIXEL_AT_RGB:
-        leds[packetBuffer[1]] = CRGB(packetBuffer[2],packetBuffer[3],packetBuffer[4]);
-        FastLED.show();
-        break;        
-      case SET_PIXEL_AT_HSV:
-        leds[packetBuffer[1]] = CHSV(packetBuffer[2],packetBuffer[3],packetBuffer[4]);
-        FastLED.show();
-        break;        
     }
   }
 }
