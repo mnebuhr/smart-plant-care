@@ -30,10 +30,32 @@ function isInteger(n) {
 
 class HSVColor {
 	constructor(h,s,v) {
-		this._h = h;
-		this._s = s;
-		this._v = v;
+		this.h = h;
+		this.s = s;
+		this.v = v;
 	}
+	get hue() { return this._h; };
+	get saturation() { return this._s; };
+	get value() { return this._v; };
+
+	get h() { return this.hue; };
+	get s() { return this.saturation; };
+	get v() { return this.value; };
+
+	set h(h) { 
+		if (h < 0 || h > 360) throw new Error(`Hue value be within range [0;360]. Was ${h}`);
+		this._h = h; 
+	};
+
+	set s(s) { 
+		if (s < 0 || s > 100) throw new Error(`Saturation must be within range [0;100]. Was ${s}`);
+		this._s = s; 
+	};
+
+	set v(v) { 
+		if (v < 0 || v > 100) throw new Error(`Value must be within range [0;100]. Was ${v}`);
+		this._v = v; 
+	};
 
 	get rgb() {
 		let val = colorconvert.hsv.rgb(this._h, this._s, this._v);
@@ -43,13 +65,18 @@ class HSVColor {
 	get hsv() {
 		return this;
 	}
+
+	toString () {
+        return `HSVColor(${this.h},${this.s},${this.v})`
+    }
+
 }
 
 class RGBColor {
 	constructor(r,g,b) {
-		this._r = r;
-		this._g = g;
-		this._b = b;
+		this.r = r;
+		this.g = g;
+		this.b = b;
 	}
 
 	get red() { return this._r; };
@@ -59,6 +86,10 @@ class RGBColor {
 	get r() { return this._r; };
 	get g() { return this._g; };
 	get b() { return this._b; };
+
+	set r(r) { this._r = r; };
+	set g(g) { this._g = g; };
+	set b(b) { this._b = b; };
 
 	get hsv() {
 		let val = colorconvert.rgb.hsv(this._r, this._g, this._b);
@@ -74,7 +105,7 @@ class RGBColor {
 	}
 
 	toString () {
-        return `RGB | (${this.r},${this.g},${this.b})`
+        return `RGBColor(${this.r},${this.g},${this.b})`
     }
 }
 
@@ -180,17 +211,7 @@ module.exports = class Panel{
 		this._client.close();
 	}
 
-	fill(color, update = false, direct = false) {
-		if (direct) {
-			let rgb = color.rgb;
-			let buf = Buffer.allocUnsafe(5);
-			buf[0] = Panel.FILL;
-			buf[1] = (update ? Panel.UPDATE : Panel.NONE);
-			buf[2] = rgb.red;
-			buf[3] = rgb.green;
-			buf[4] = rgb.blue;
-			return this._send(buf);
-		}
+	fill(color, update = false) {
 		this._buffer.fill(color);
 		if (update) return this.update();
 		return this;
@@ -226,30 +247,18 @@ module.exports = class Panel{
 	}
 
 	
-	setPixelXY(x,y, color, update = false, direct = false) {
-		if (direct) {
-			return this.setPixelAt(this._getIndex(x,y), color.red, color.green, color.blue, update);
-		}
-		this._buffer.setColorAt(this._getIndex(x,y), color);
+	setPixelXY(x,y, color, update = false) {
+		return this.setColorAt(this._getIndex(x,y), color, update);
+	}
+
+	setPixelAt(i, color, update = false) {
+		this._buffer.setColorAt(i, color);
 		if (update) return this.update();
 		return this;
 	}
 
-	setPixelAt(i, color, update = false, direct = false) {
-		if (direct) {
-			let rgb = color.rgb.gammaCorrectedColor;
-			let buf = Buffer.allocUnsafe(6);
-			buf[0] = Panel.SET_PIXEL_AT;
-			buf[1] = (update ? Panel.UPDATE : Panel.NONE);
-			buf[2] = i;
-			buf[3] = rgb.red;
-			buf[4] = rgb.green;
-			buf[5] = rgb.blue;
-			return this._send(buf);
-		};
-		this._buffer.setColorAt(i, color);
-		if (update) return this.update();
-		return this;
+	getPixelAt(i) {
+		return this._buffer.getColorAt(i);
 	}
 
 	show() {

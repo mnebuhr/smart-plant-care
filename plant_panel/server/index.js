@@ -25,7 +25,48 @@ function displayTime() {
 	panel.writeBitmaskRow(5,Panel.Blue, d.getSeconds() % 10);	
 }
 
-function anim() {
+function rainbow() {
+	let color = Panel.Red.hsv;
+	color.s = 100;
+	color.v = 50;
+
+	var rainbowAnim = function() {
+		panel.fill(color);
+		color.h = (color.h + 1) % 360;
+		panel.update()
+		.then( setTimeout(rainbowAnim,50))
+		.catch( err => {
+			console.log(err);
+			panel.close();
+		});
+	}	
+	rainbowAnim();
+}
+
+function rainbow2() {
+	let color = Panel.Red.hsv;
+	color.s = 100;
+	color.v = 50;
+	var delta = 1;
+	var anim = function() {
+		let h = color.h;
+		for (var i=0; i<49; i++) {
+			panel.setPixelAt(i,color.rgb);
+			color.h = (color.h + (delta)) % 360;
+		}
+		color.h = (h + 1) % 360;
+		delta = (delta + 1) & 255;
+		panel.update()
+		.then( setTimeout(anim,50))
+		.catch( err => {
+			console.log(err);
+			panel.close();
+		});
+	}	
+	anim();
+}
+	
+function panim() {
 	displayTime();
 	panel.update().then( () => setTimeout(anim,1000) )
 	.catch( err => {
@@ -33,29 +74,6 @@ function anim() {
 		panel.close();
 	});
 }
-/*
-panel.fill(0,0,0,Panel.UPDATE)
-.then( () => {
-	return test();
-})
-.then( () => {
-	//return panel.fill(0,0,0,Panel.UPDATE);
-	return Promise.resolve();	
-})
-.then( () => {
-	panel.close();
-	console.log('Connection closed');	
-})
-.catch( err => {
-	console.log(err);
-	panel.close();
-});
-
-*/
 //panel.showSprite('sprites/test02.png',true).then(() => console.log('t'));
-anim();
-/*
-panel.fill(Panel.Black)
-.then( () => panel.writeColors([Panel.White, Panel.Red, Panel.Green, Panel.Blue]) )
-.then(() => panel.close());
-*/
+//anim();
+rainbow2();
