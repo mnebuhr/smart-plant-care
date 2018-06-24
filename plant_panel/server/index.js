@@ -13,6 +13,43 @@ function test() {
 	return panel.update();
 }
 
+function glitter(delay=50, hue=undefined) {
+	let glitterData = new Array(20);
+
+	var getHue = function() {
+		if (hue != undefined) {
+			hue += 0.1;
+			if (hue > 360) hue = 0;
+			return Math.floor(hue);
+		}
+		return getRandomInt(256);
+	}
+
+	for (var i=0; i<glitterData.length; i++) {
+		glitterData[i] = {
+			index : getRandomInt(49),
+			hsv   : Panel.HSVColor(getHue(),getRandomInt(100), getRandomInt(100))
+		}; 
+	}
+
+	var drawGlitter = function(hue=undefined) {
+		for (var i=0; i<glitterData.length; i++) {
+			if (glitterData[i].hsv.v <= 0) {
+				glitterData[i].hsv = Panel.HSVColor(getHue(),getRandomInt(100), 100);
+				glitterData[i].index = getRandomInt(49);
+			}
+			panel.setPixelAt(glitterData[i].index, glitterData[i].hsv.rgb);
+			glitterData[i].hsv.v = glitterData[i].hsv.v - 1;
+		}
+	}
+
+	var anim = function() {
+		drawGlitter(hue);		
+		panel.update().then(setTimeout(anim,delay));
+	}
+	anim();
+}
+
 function displayTime() {
 	var d = new Date();
 	panel.writeBitmaskRow(0,Panel.Red, Math.floor(d.getHours() / 10));
@@ -30,17 +67,17 @@ function rainbow() {
 	color.s = 100;
 	color.v = 50;
 
-	var rainbowAnim = function() {
+	var anim = function() {
 		panel.fill(color);
 		color.h = (color.h + 1) % 360;
 		panel.update()
-		.then( setTimeout(rainbowAnim,50))
+		.then( setTimeout(anim,50))
 		.catch( err => {
 			console.log(err);
 			panel.close();
 		});
 	}	
-	rainbowAnim();
+	anim();
 }
 
 function rainbow2() {
@@ -66,7 +103,7 @@ function rainbow2() {
 	anim();
 }
 	
-function panim() {
+function clock() {
 	displayTime();
 	panel.update().then( () => setTimeout(anim,1000) )
 	.catch( err => {
@@ -77,3 +114,4 @@ function panim() {
 //panel.showSprite('sprites/test02.png',true).then(() => console.log('t'));
 //anim();
 rainbow2();
+//glitter(100,350);
