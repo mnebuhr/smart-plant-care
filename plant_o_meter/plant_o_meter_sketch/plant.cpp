@@ -1,4 +1,3 @@
-#include <Adafruit_Sensor.h>
 #include <DHT_U.h>
 #include <DHT.h>
 
@@ -7,7 +6,7 @@
 #define DHTPIN            4         // Pin which is connected to the DHT sensor.
 #define DHTTYPE           DHT22     // DHT 22 (AM2302)
 
-//#define DEBUG
+#define DEBUG
 //#define ESPFix  // WiFi fix: https://github.com/esp8266/Arduino/issues/2186
 //#define MQTTLOG
  
@@ -103,6 +102,10 @@ static void startWIFI(const char* ssid, const char* password) {
 
   };
   clientid[index] = 0;
+  #ifdef DEBUG
+  Serial.print(F("Your client id: "));
+  Serial.println(clientid);
+  #endif
 }
 
 static void reconnect() {

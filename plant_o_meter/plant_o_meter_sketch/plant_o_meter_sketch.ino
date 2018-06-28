@@ -7,21 +7,19 @@
  * Created : 07.05.2018
  */
 
+#define DEBUG
+
 #include "plant.h"
 
-//#define DEBUG
 
 #define DEEP_SLEEP_SECONDS   1200
 #define NUMBER_OF_TRIES      10
 #define MOISTURE_SENSOR_PIN  A0
 
-//const char* ssid        = "xxx";      
-//const char* password    = "YYY";
-
 const char* ssid        = "FRITZ!Box 6360 Cable";      
 const char* password    = "4249789363748310";
 
-const char* mqtt_server = "192.168.178.77";
+const char* mqtt_server = "192.168.178.97";
 const uint16_t port     = 1883;
 
 void setup() {
