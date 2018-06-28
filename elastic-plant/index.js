@@ -9,14 +9,23 @@ let mqttConfig = config.get('MqttServer');
 let mqtt_ip = mqttConfig.get('ip');
 let mqtt_port = mqttConfig.get('port')
 
+let elasticConfig = config.get('ElasticSearch');
+let elastic_server = elasticConfig.get('server');
+let elastic_port = elasticConfig.get('port');
+let elastic_index = elasticConfig.get('index');
 
 let elasticsearch = require('elasticsearch');
 let elastic_client = new elasticsearch.Client({
-  host: 'nebuhrhood:9200',
-  log: 'trace'
+  host: `${elastic_server}:${elastic_port}`,
+  log: {
+    type: 'file',
+    level: 'warning',
+    path: 'smile.log'
+  }
 });
 
 console.log(`Using MqttServer at ${mqtt_ip}:${mqtt_port}`);
+console.log(`Using ElasticSearchServer at ${elastic_server}:${elastic_port} with index ${elastic_index}`);
 
 var client  = mqtt.connect(mqtt_ip)
 
@@ -64,7 +73,7 @@ client.on('message', function (topic, message) {
 	  	console.log('Sensor = ' + sensor.name);
 	  	console.log('Value = ' + value);
 	  	elastic_client.index({
-	  		index: 'testindex',
+	  		index: elastic_index,
 	  		type: 'sensordata',
 		  	body: {
 		  		mac: mac,
@@ -92,7 +101,7 @@ client.on('message', function (topic, message) {
         let sensor = sensors[sensorId];
 	  	
         elastic_client.index({
-	  		index: 'testindex',
+	  		index: elastic_index,
 	  		type: 'sensordata',
 		  	body: {
 		  		mac: mac,

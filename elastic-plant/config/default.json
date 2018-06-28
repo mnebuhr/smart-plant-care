@@ -4,7 +4,8 @@
       "port" : 1883
     },
     "ElasticSearch" : {
-    	"server" : "nebuhrhood",
-    	"port"   : 9200
+    	"server" : "localhost",
+    	"port"   : 9200,
+    	"index"  : "smile-plant-index"
     }
 }
