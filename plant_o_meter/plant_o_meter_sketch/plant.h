@@ -5,13 +5,6 @@
 #include <PubSubClient.h>
 #include <Arduino.h>
 
-#define UPDATE_SENSOR_VALUE    1
-
-#define HUMIDITY_SENSOR        1
-#define MOISTURE_SENSOR        2
-#define MOISTURE_SENSOR_RAW   12
-#define TEMPERATURE_SENSOR     3
-
 void setDeepSleepTimer(uint16_t seconds);
 
 void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t port);
@@ -19,6 +12,8 @@ void setupMqtt(const char* ssid, const char* pwd, const char* server, uint16_t p
 void setupSensors();
 
 void pushSensorData(uint8_t sensor, uint16_t value);
+
+void pushData();
 
 void pushWifiSignalQuality(uint8_t number_of_tries);
 

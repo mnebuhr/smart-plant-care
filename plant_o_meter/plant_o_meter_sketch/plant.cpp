@@ -1,17 +1,11 @@
 #include <DHT_U.h>
 #include <DHT.h>
 
+#include "config.h"
 #include "plant.h"
 
-#define DHTPIN            4         // Pin which is connected to the DHT sensor.
-#define DHTTYPE           DHT22     // DHT 22 (AM2302)
-
-#define DEBUG
-//#define ESPFix  // WiFi fix: https://github.com/esp8266/Arduino/issues/2186
-//#define MQTTLOG
  
 DHT_Unified dht(DHTPIN, DHTTYPE);
-
 sensors_event_t event;
 
 WiFiClient espClient;
@@ -23,9 +17,6 @@ static const char hex[17] = "0123456789ABCDEF";
 static char* m_ssid;
 static char* m_password;
 static uint64_t deep_sleep_timeout = 500;
-
-
-#define USER_DATA 6
 
 void logDebug(String msg) {
   #ifdef DEBUG
@@ -103,7 +94,7 @@ static void startWIFI(const char* ssid, const char* password) {
   };
   clientid[index] = 0;
   #ifdef DEBUG
-  Serial.print(F("Your client id: "));
+  Serial.print(F("==> Your client id: "));
   Serial.println(clientid);
   #endif
 }
@@ -170,6 +161,12 @@ uint16_t getMoistureRaw(const uint8_t pin) {
 }
 
 void setupSensors() {
+
+  #ifdef F_WATER_PUMP
+  pinMode(PUMP_PIN, OUTPUT);
+  digitalWrite(PUMP_PIN, HIGH);
+  #endif
+  
   dht.begin();
   #ifdef DEBUG
   Serial.println(F("DHTxx Unified Sensor Example"));
@@ -291,5 +288,75 @@ void hibernate() {
   logDebug(msg);
   #endif
   ESP.deepSleep(deep_sleep_timeout * 1e6); // deepSleep needs parameter to be in microseconds
+}
+
+
+void pushTemperature() {
+  float temperature = getTemperature(NUMBER_OF_TRIES);
+  if(isnan(temperature)) {
+    #ifdef DEBUG
+    Serial.println("Error while reading the temperature.");
+    #endif 
+  } else {
+    pushSensorData(TEMPERATURE_SENSOR, scaledInt(temperature, 100));
+    #ifdef DEBUG
+    Serial.print("Temperatur: ");
+    Serial.println(temperature);
+    #endif
+  }  
+}
+
+void pushHumidity() {
+  float humidity = getHumidity(NUMBER_OF_TRIES);
+  if(isnan(humidity)) {
+    #ifdef DEBUG
+    Serial.println("Error while reading the humidity.");
+    #endif
+    
+  } else {
+    pushSensorData(HUMIDITY_SENSOR, scaledInt(humidity, 100));
+    #ifdef DEBUG
+    Serial.print("Feuchtigkeit: ");
+    Serial.println(humidity);
+    #endif
+  }  
+}
+
+void pumpWater() {
+  digitalWrite(PUMP_PIN, LOW);
+  delay(1000);
+  digitalWrite(PUMP_PIN, HIGH);
+}
+
+void pushMoisture() {
+  const uint8_t moisture = getMoisture(MOISTURE_SENSOR_PIN,1020,550);
+  pushSensorData(MOISTURE_SENSOR, moisture*100);
+  pushSensorData(MOISTURE_SENSOR_RAW,getMoistureRaw(MOISTURE_SENSOR_PIN));   
+  if (moisture < 25) {
+    pumpWater(); 
+  }
+}
+
+void pushData() {
+  handleEvents();
+  
+  #ifdef F_WIFI_SIGNAL_QUALITY
+  pushWifiSignalQuality(NUMBER_OF_TRIES);   // Sending the actual rssi to the mqtt broker
+  #endif
+
+  #ifdef F_TEMPERATURE_SENSOR
+  // Now reading the temperature value in celsius. If reading was successfull,
+  // Send the data to the mqtt broker.
+  pushTemperature();
+  #endif
+
+  #ifdef F_HUMIDITY_SENSOR
+  pushHumidity();
+  #endif
+
+  #ifdef F_MOISTURE_SENSOR
+  pushMoisture();
+  #endif
+
 }
 
