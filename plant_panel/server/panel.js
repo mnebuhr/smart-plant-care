@@ -172,6 +172,16 @@ module.exports = class Panel{
 	static RGBColor(r,g,b) { return new RGBColor(r,g,b); };
 	static HSVColor(h,s,v) { return new HSVColor(h,s,v); };
 
+	static fromHex(val) {
+		let rgb = colorconvert.hex.rgb(val);
+		return Panel.RGBColor(rgb[0],rgb[1],rgb[2]);
+	}
+
+	static fromName(val) {
+		let rgb = colorconvert.keyword.rgb(val);
+		return Panel.RGBColor(rgb[0],rgb[1],rgb[2]);
+	}
+
 	static get Black() { return Panel.RGBColor(0,0,0); };
 	static get White() { return Panel.RGBColor(255,255,255); };
 	static get Red() { return Panel.RGBColor(255,0,0); };
@@ -194,6 +204,17 @@ module.exports = class Panel{
 	get width() { return this._width; };
 	get height() { return this._height; };
 
+	isValidX(x) {
+		return x >= 0 && x < this.width; 
+	}
+
+	isValidY(y) {
+		return y >= 0 && y < this.height; 
+	}
+
+	isValid(x,y) {
+		return this.isValidX(x) && this.isValidY(y);	
+	}
 
 	_send(message) {
 		return new Promise( (resolve, reject) => {
@@ -246,9 +267,13 @@ module.exports = class Panel{
 		return y*this._width+x;
 	}
 
+	toIndex(x,y) {
+		return this._getIndex(x,y);
+	}
+
 	
 	setPixelXY(x,y, color, update = false) {
-		return this.setColorAt(this._getIndex(x,y), color, update);
+		return this._buffer.setColorAt(this._getIndex(x,y), color, update);
 	}
 
 	setPixelAt(i, color, update = false) {

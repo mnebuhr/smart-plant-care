@@ -11,5 +11,8 @@
   "dependencies": {
     "color-convert": "^1.9.2",
     "get-pixels": "^3.3.0"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.5.5"
   }
 }

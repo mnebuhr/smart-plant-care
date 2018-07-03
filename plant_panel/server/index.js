@@ -1,6 +1,8 @@
 let Panel = require('./panel');
+let Tetris = require('./tetris');
 
-let panel = new Panel('192.168.178.30',3548,7,7, Panel.MODE_LTR);
+let panel = new Panel('192.168.178.96',3548,7,7, Panel.MODE_LTR);
+let tetris = new Tetris(panel);
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
@@ -105,13 +107,94 @@ function rainbow2() {
 	
 function clock() {
 	displayTime();
-	panel.update().then( () => setTimeout(anim,1000) )
+	panel.update().then( () => setTimeout(clock,1000) )
 	.catch( err => {
 		console.log(err);
 		panel.close();
 	});
 }
+
+function tetrisAnimation1() {
+	var hue = 0;
+	var right = true;
+	
+	newblock = () => {
+		let id =  getRandomInt(Tetris.blockCount);
+		tetris.setBlock(id); 
+		tetris.color = Panel.HSVColor(hue,100,100);
+		tetris.rotateRight();
+		tetris.adjust();
+	};
+
+	newblock();
+
+	anim = () => {
+		panel.fill(Panel.HSVColor((hue) % 360,100,30));
+		tetris.drawBlock();
+		hue = (hue + 1) % 360;		
+
+		if (right) {
+			tetris.moveRight()
+			if (tetris.overflowRight) { 
+				right = false;
+				newblock();			
+			}
+		} else {
+			tetris.moveLeft();
+			if (tetris.overflowLeft) { 
+				right = true; 
+				newblock(); 
+			}
+		}
+		panel.update().then( () => setTimeout(anim,150) );
+	};
+	anim();
+	
+}
+
+function tetrisAnimation2() {
+	var hue = 0;
+	
+	newblock = () => {
+		tetris.newRandomBlock(); 
+		tetris.rotation = getRandomInt(tetris.numberOfRotations);
+		tetris.color = Panel.HSVColor(hue,100,100);
+		tetris.freezeColor = Panel.HSVColor((hue + 180) % 360,100,100);
+		tetris.x = getRandomInt(panel.width-tetris.blockWidth);
+		tetris.y = 0 - tetris.blockHeight;
+		tetris.adjustX();
+	};
+
+	newblock();
+
+	anim = () => {
+		tetris.backgroundColor = Panel.HSVColor((hue) % 360,100,30);
+		//if(tetris.y == 4) tetris.writeBlockToGamefield();
+		tetris.drawGamefield(false);
+		tetris.drawBlock();
+		hue = (hue + 1) % 360;
+		if (tetris.checkforGamefieldCollision(0,1) || tetris.y + tetris.blockHeight == tetris.panel.height ) {
+			tetris.writeBlockToGamefield();
+			if (tetris.reachedTop()) {
+				tetris.clearGamefield();
+			}
+			newblock();
+		} else {
+			tetris.moveDown();
+		};
+
+		panel.update().then( () => setTimeout(anim,200) );
+	};
+	anim();
+	
+}
+
 //panel.showSprite('sprites/test02.png',true).then(() => console.log('t'));
 //anim();
-rainbow2();
-//glitter(100,350);
+//rainbow2();
+//glitter(80,0);
+tetrisAnimation2();
+//clock();
+
+
+
